@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ripple_animation/ripple_animation.dart';
 import 'package:watch_store/loginScreen/loginScreen.dart';
-import 'package:watch_store/widgets/customButton.dart';
+import 'package:watch_store/widgets/customButtons.dart';
 
 import '../constants.dart';
 

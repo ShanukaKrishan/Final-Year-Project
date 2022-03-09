@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:watch_store/constants.dart';
 import 'package:watch_store/widgets/customAppBar.dart';
 import 'package:pinput/pinput.dart';
-import 'package:watch_store/widgets/customButton.dart';
+import 'package:watch_store/widgets/customButtons.dart';
 
 class PhoneVerificationScreen extends StatefulWidget {
   const PhoneVerificationScreen({Key? key}) : super(key: key);

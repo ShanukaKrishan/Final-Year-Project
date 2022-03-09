@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:watch_store/forgotScreen/CheckEmailScreen.dart';
 import 'package:watch_store/forgotScreen/forgotScreen.dart';
+import 'package:watch_store/productDetailScreen/productDetailScreen.dart';
+import 'package:watch_store/widgets/verifyEmailScreen.dart';
 import 'cartScreen/cartScreen.dart';
 import 'loginScreen/loginScreen.dart';
 import 'registerScreen/registerScreen.dart';
 import 'homeScreen/homeScreen.dart';
 import 'profileScreen/profileScreen.dart';
 import 'wishListScreen/wishListScreen.dart';
+import 'shippingScreens/shippingAddressScreen.dart';
 
 final Map<String, WidgetBuilder> routes = {
   LoginScreen.routeName: (context) => const LoginScreen(),
@@ -17,4 +20,7 @@ final Map<String, WidgetBuilder> routes = {
   CartScreen.routeName: (context) => const CartScreen(),
   ProfileScreen.routeName: (context) => const ProfileScreen(),
   WishListScreen.routeName: (context) => const WishListScreen(),
+  VerifyEmailScreen.routeName: (context) => const VerifyEmailScreen(),
+  ProductDetailScreen.routeName: (context) => const ProductDetailScreen(),
+  ShippingAddressScreen.routeName: (context) => const ShippingAddressScreen(),
 };

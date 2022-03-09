@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import "package:flutter_screenutil/flutter_screenutil.dart";
 import 'package:watch_store/constants.dart';
+
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:ripple_animation/ripple_animation.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:watch_store/widgets/customButton.dart';
-
-import '../loginScreen/loginScreen.dart';
+import 'package:watch_store/loginScreen/loginScreen.dart';
+import 'package:watch_store/widgets/customButtons.dart';
 
 class CheckEmailScreen extends StatefulWidget {
   static String routeName = '/checkEmailScreen';
+
   const CheckEmailScreen({Key? key}) : super(key: key);
 
   @override
@@ -24,9 +26,9 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           const SizedBox(height: 100),
-          Container(
+          const SizedBox(
             width: double.infinity,
-            child: const RippleAnimation(
+            child: RippleAnimation(
               repeat: true,
               color: kPrimaryColor,
               minRadius: 50,
@@ -62,7 +64,7 @@ class _CheckEmailScreenState extends State<CheckEmailScreen> {
             height: 50,
           ),
           CustomButton(
-              buttonText: "Back to Login",
+              buttonText: "Back to login",
               press: () {
                 Navigator.pushNamed(context, LoginScreen.routeName);
               })
