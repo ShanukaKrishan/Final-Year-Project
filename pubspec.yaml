@@ -50,7 +50,12 @@ dependencies:
   provider: ^6.0.2
   add_to_cart_animation: ^1.0.1
   cool_alert: ^1.1.0
-  country_list_pick: ^1.0.1+5
+  csc_picker: ^0.2.6
+  country_code_picker: ^2.0.2
+  flutter_credit_card: ^3.0.1
+
+
+
 
 
 

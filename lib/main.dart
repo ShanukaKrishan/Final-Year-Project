@@ -4,10 +4,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:watch_store/cartScreen/cartScreen.dart';
 import 'package:watch_store/constants.dart';
 import 'package:watch_store/homeScreen/homeScreen.dart';
+
 import 'package:watch_store/providers/cartProvider.dart';
-import 'models/product.dart';
+
 import 'providers/productsProvider.dart';
-import 'package:watch_store/productDetailScreen/productDetailScreen.dart';
+
 import 'package:watch_store/widgets/utils.dart';
 import 'package:watch_store/widgets/verifyEmailScreen.dart';
 import 'loginScreen/loginScreen.dart';

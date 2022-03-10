@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:watch_store/OrderDetailScreen/orderDetailScreen.dart';
 import 'package:watch_store/forgotScreen/CheckEmailScreen.dart';
 import 'package:watch_store/forgotScreen/forgotScreen.dart';
+import 'package:watch_store/paymentScreen/paymentScreen.dart';
 import 'package:watch_store/productDetailScreen/productDetailScreen.dart';
 import 'package:watch_store/widgets/verifyEmailScreen.dart';
 import 'cartScreen/cartScreen.dart';
@@ -23,4 +25,6 @@ final Map<String, WidgetBuilder> routes = {
   VerifyEmailScreen.routeName: (context) => const VerifyEmailScreen(),
   ProductDetailScreen.routeName: (context) => const ProductDetailScreen(),
   ShippingAddressScreen.routeName: (context) => const ShippingAddressScreen(),
+  PaymentScreen.routeName: (context) => const PaymentScreen(),
+  OrderDetailScreen.routeName: (context) => const OrderDetailScreen(),
 };

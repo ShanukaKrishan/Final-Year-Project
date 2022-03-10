@@ -1,13 +1,14 @@
+import 'package:country_code_picker/country_code_picker.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import 'package:watch_store/widgets/customButtons.dart';
-import 'package:country_list_pick/country_list_pick.dart';
+import 'package:watch_store/paymentScreen/paymentScreen.dart';
 
-import '../cartScreen/cartScreen.dart';
+import 'package:watch_store/widgets/customButtons.dart';
+
 import '../constants.dart';
-import '../providers/cartProvider.dart';
-import '../widgets/cartBadge.dart';
+
+import '../widgets/widgetAppBar.dart';
 
 class ShippingAddressScreen extends StatefulWidget {
   static String routeName = '/shippingScreen';
@@ -18,7 +19,6 @@ class ShippingAddressScreen extends StatefulWidget {
 }
 
 class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -26,47 +26,8 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              Container(
-                decoration: BoxDecoration(color: Colors.black),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: FlatButton(
-                          onPressed: () => Navigator.pop(context),
-                          child:
-                              const Icon(Icons.arrow_back, color: Colors.white),
-                        ),
-                      ),
-                      const Text(
-                        "SHIPPING ADDRESS",
-                        style: TextStyle(
-                            fontFamily: kDMSerifDisplay,
-                            fontSize: 18,
-                            color: Colors.white),
-                      ),
-                      Consumer<CartProvider>(
-                        builder: (_, cartData, ch) => CartBadge(
-                            child: ch!,
-                            value: cartData.itemCount == 0
-                                ? 0.toString()
-                                : cartData.itemCount.toString(),
-                            color: kPrimaryColor),
-                        child: IconButton(
-                          icon: const Icon(Icons.shopping_bag_outlined,
-                              color: Colors.white),
-                          onPressed: () {
-                            Navigator.pushNamed(context, CartScreen.routeName);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              const WidgetAppBar(
+                appBarTitle: "SHIPPING ADDRESS",
               ),
               Container(
                 decoration: const BoxDecoration(
@@ -90,112 +51,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                 ),
               ),
               const SizedBox(height: 30),
-              Form(
-                key: _formKey,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 30),
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Name can't be empty";
-                          } else if (value.length < 4) {
-                            return "Name can't be less than 4 characters";
-                          }
-                          return null;
-                        },
-                        decoration: const InputDecoration(hintText: "Name"),
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        keyboardType: TextInputType.emailAddress,
-                        onChanged: (value) {},
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return " Email can't be empty";
-                          } else if (!emailValidatorRegExp.hasMatch(value)) {
-                            return "Enter a valid email";
-                          }
-                          return null;
-                        },
-                        decoration:
-                            const InputDecoration(hintText: "Email Address"),
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Address Line 1";
-                          } else if (value.length < 4) {
-                            return "Address can't be less than 4 characters";
-                          }
-                          return null;
-                        },
-                        decoration: const InputDecoration(
-                            hintText: "Street no, House no"),
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        decoration: const InputDecoration(hintText: "Optional"),
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Zip Code";
-                          } else if (!value.contains(RegExp(r'[0-9]'))) {
-                            return "Zip Code cannot contain alphabets";
-                          }
-                          return null;
-                        },
-                        decoration: const InputDecoration(hintText: "Zip Code"),
-                      ),
-                      const SizedBox(height: 20),
-                      CountryListPick(
-                          appBar: AppBar(
-                            backgroundColor: Colors.blue,
-                            title: Text('Choisir un pays'),
-                          ),
-
-                          // if you need custome picker use this
-                          // pickerBuilder: (context, CountryCode countryCode){
-                          //   return Row(
-                          //     children: [
-                          //       Image.asset(
-                          //         countryCode.flagUri,
-                          //         package: 'country_list_pick',
-                          //       ),
-                          //       Text(countryCode.code),
-                          //       Text(countryCode.dialCode),
-                          //     ],
-                          //   );
-                          // },
-
-                          // To disable option set to false
-                          theme: CountryTheme(
-                            isShowFlag: true,
-                            isShowTitle: true,
-                            isShowCode: true,
-                            isDownIcon: true,
-                            showEnglishName: true,
-                          ),
-                          // Set default value
-                          initialSelection: '+62',
-                          // or
-                          // initialSelection: 'US'
-
-                          // Whether to allow the widget to set a custom UI overlay
-                          useUiOverlay: true,
-                          // Whether the country list should be wrapped in a SafeArea
-                          useSafeArea: false),
-                      const SizedBox(height: 15),
-                      CustomButton(buttonText: "Next", press: () {}),
-                    ],
-                  ),
-                ),
-              ),
+              const AddressForm(),
             ],
           ),
         ),
@@ -203,3 +59,195 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
     );
   }
 }
+
+class AddressForm extends StatefulWidget {
+  const AddressForm({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<AddressForm> createState() => _AddressFormState();
+}
+
+final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+class _AddressFormState extends State<AddressForm> {
+  String _countryValue = "Select Country";
+  bool _toggleValue = false;
+  @override
+  Widget build(BuildContext context) {
+    Widget _buildSwitch() => Transform.scale(
+          scale: 1,
+          child: Switch.adaptive(
+              activeColor: kPrimaryColor,
+              value: _toggleValue,
+              onChanged: (value) => setState(() {
+                    _toggleValue = value;
+                  })),
+        );
+
+    return Form(
+      key: _formKey,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Column(
+          children: [
+            TextFormField(
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return "Name can't be empty";
+                } else if (value.length < 4) {
+                  return "Name can't be less than 4 characters";
+                }
+                return null;
+              },
+              decoration: const InputDecoration(hintText: "Name"),
+            ),
+            const SizedBox(height: 20),
+            TextFormField(
+              keyboardType: TextInputType.emailAddress,
+              onChanged: (value) {},
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return " Email can't be empty";
+                } else if (!emailValidatorRegExp.hasMatch(value)) {
+                  return "Enter a valid email";
+                }
+                return null;
+              },
+              decoration: const InputDecoration(hintText: "Email Address"),
+            ),
+            const SizedBox(height: 20),
+            TextFormField(
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return "Address Line 1";
+                } else if (value.length < 4) {
+                  return "Address can't be less than 4 characters";
+                }
+                return null;
+              },
+              decoration:
+                  const InputDecoration(hintText: "City, Street no, House no"),
+            ),
+            const SizedBox(height: 20),
+            TextFormField(
+              decoration: const InputDecoration(hintText: "Optional"),
+            ),
+            const SizedBox(height: 20),
+            TextFormField(
+              keyboardType: TextInputType.phone,
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return "Zip Code";
+                } else if (!value.contains(RegExp(r'[0-9]'))) {
+                  return "Zip Code cannot contain alphabets";
+                }
+                return null;
+              },
+              decoration: const InputDecoration(hintText: "Zip Code"),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _countryValue,
+                  style: const TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+                CountryCodePicker(
+                  onChanged: (country) {
+                    setState(() {
+                      _countryValue = country.name!;
+                    });
+                  },
+                  initialSelection: 'KW',
+                  hideMainText: true,
+                  showCountryOnly: true,
+                  showOnlyCountryWhenClosed: false,
+                  alignLeft: false,
+                  padding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+            Divider(
+              color: Colors.grey.shade600,
+            ),
+            TextFormField(
+              keyboardType: TextInputType.phone,
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return "Phone number can't be empty";
+                } else if (!value.contains(RegExp(r'[0-9]'))) {
+                  return "Phone number cannot contain alphabets";
+                }
+                return null;
+              },
+              decoration: const InputDecoration(hintText: "Phone number"),
+            ),
+            const SizedBox(height: 30),
+            Padding(
+              padding: const EdgeInsets.only(left: 5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Set Default Address",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  _buildSwitch(),
+                ],
+              ),
+            ),
+            const SizedBox(height: 5),
+            CustomButton(
+                buttonText: "Next",
+                press: () =>
+                    Navigator.pushNamed(context, PaymentScreen.routeName)),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+// CSCPicker(
+// layout: Layout.vertical,
+// defaultCountry: DefaultCountry.Sri_Lanka,
+// flagState: CountryFlag.ENABLE,
+// countryDropdownLabel: countryValue,
+//
+// //dropdownDecoration: const BoxDecoration(),
+// showCities: false,
+//
+// showStates: false,
+// selectedItemStyle: const TextStyle(
+// color: Colors.black,
+// fontFamily: kSourceSansPro,
+// fontSize: 16,
+// ),
+// dropdownHeadingStyle: const TextStyle(
+// color: kPrimaryColor,
+// fontFamily: kDMSerifDisplay,
+// fontSize: 16),
+// onStateChanged: (value) {
+// setState(() {
+// var stateValue = value;
+// });
+// },
+// onCityChanged: (value) {
+// var cityValue = value;
+// },
+// onCountryChanged: (value) {
+// FocusScope.of(context).unfocus();
+//
+// setState(() {
+// countryValue = value;
+// });
+// },
+// ),
