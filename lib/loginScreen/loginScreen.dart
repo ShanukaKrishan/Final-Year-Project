@@ -122,16 +122,22 @@ class _LoginScreenState extends State<LoginScreen> {
                                 hintText: "Password",
                                 suffixIcon: GestureDetector(
                                   onTap: () {
-                                    FocusScope.of(context).unfocus();
+                                    //FocusScope.of(context).unfocus();
                                     setState(() {
                                       isObscureText = !isObscureText;
                                     });
                                   },
-                                  child: const Icon(
-                                    Icons.visibility,
-                                    color: Colors.black,
-                                    size: 20,
-                                  ),
+                                  child: isObscureText
+                                      ? const Icon(
+                                          Icons.visibility_off,
+                                          color: Colors.black,
+                                          size: 20,
+                                        )
+                                      : const Icon(
+                                          Icons.visibility,
+                                          color: Colors.black,
+                                          size: 20,
+                                        ),
                                 ),
                               ),
                             ),

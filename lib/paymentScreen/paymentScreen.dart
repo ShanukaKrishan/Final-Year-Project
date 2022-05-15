@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/credit_card_brand.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:watch_store/OrderDetailScreen/orderDetailScreen.dart';
 import 'package:watch_store/constants.dart';
 import 'package:watch_store/widgets/customButtons.dart';
@@ -104,8 +106,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   CustomButton(
                       buttonText: "Confirm",
                       press: () {
-                        Navigator.pushNamed(
-                            context, OrderDetailScreen.routeName);
+                        pushNewScreen(
+                          context,
+
+                          screen: const OrderDetailScreen(),
+                          withNavBar: false, // OPTIONAL VALUE. True by default.
+                          pageTransitionAnimation:
+                              PageTransitionAnimation.cupertino,
+                        );
+                        // Navigator.pushNamed(
+                        //     context, OrderDetailScreen.routeName);
                         print(cardHolderName);
                         print(expiryDate);
                         print(cvvCode);

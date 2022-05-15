@@ -1,8 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
+import 'package:provider/provider.dart';
+import 'package:watch_store/OrderDetailScreen/orderDetailScreen.dart';
+import 'package:watch_store/models/address.dart';
 import 'package:watch_store/paymentScreen/paymentScreen.dart';
+import 'package:watch_store/productDetailScreen/productDetailScreen.dart';
+import 'package:watch_store/providers/addressProvider.dart';
+import 'package:watch_store/providers/productsProvider.dart';
+import 'package:watch_store/shippingScreens/shippingAddressFormScreen.dart';
 
 import 'package:watch_store/widgets/customButtons.dart';
 
@@ -19,8 +29,59 @@ class ShippingAddressScreen extends StatefulWidget {
 }
 
 class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
+  bool _checkAddress = false;
+  final GlobalKey<FormState> _shippingKey = GlobalKey<FormState>();
+
+  String _countryValue = "Select Country";
+  final _addressOne = TextEditingController();
+  String _addressTwo = '';
+  final _zipCode = TextEditingController();
+  String country = "Kuwait";
+  final _phone = TextEditingController();
+  bool _toggleValue = false;
+  DocumentSnapshot? snapshot;
+  Future<void> checkAddress() async {
+    final userID = FirebaseAuth.instance.currentUser!.uid;
+    final userAddress = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userID)
+        .collection('userAddress')
+        .get();
+
+    if (userAddress.docs.length == 0) {
+      setState(() {
+        _checkAddress = true;
+      });
+    } else {
+      snapshot = userAddress.docs[0];
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
+      final address = Provider.of<UserAddress>(context, listen: false);
+
+      await address.getAddressFromFirebase();
+    });
+    super.initState();
+  }
+
+  Widget _buildSwitch() => Transform.scale(
+        scale: 1,
+        child: Switch.adaptive(
+            activeColor: kPrimaryColor,
+            value: _toggleValue,
+            onChanged: (value) => setState(() {
+                  _toggleValue = value;
+                })),
+      );
+
   @override
   Widget build(BuildContext context) {
+    final address = Provider.of<UserAddress>(context);
+
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(
@@ -51,74 +112,34 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                 ),
               ),
               const SizedBox(height: 30),
-              const AddressForm(),
+              Consumer<UserAddress>(builder: (context, provider, child) {
+                if (provider.addressFetching) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: kPrimaryColor),
+                  );
+                }
+                if (provider.address.isEmpty) {
+                  return addressForm();
+                }
+                return addressTitle(address.address);
+              })
             ],
           ),
         ),
       ),
     );
   }
-}
 
-class AddressForm extends StatefulWidget {
-  const AddressForm({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  State<AddressForm> createState() => _AddressFormState();
-}
-
-final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-class _AddressFormState extends State<AddressForm> {
-  String _countryValue = "Select Country";
-  bool _toggleValue = false;
-  @override
-  Widget build(BuildContext context) {
-    Widget _buildSwitch() => Transform.scale(
-          scale: 1,
-          child: Switch.adaptive(
-              activeColor: kPrimaryColor,
-              value: _toggleValue,
-              onChanged: (value) => setState(() {
-                    _toggleValue = value;
-                  })),
-        );
-
+  Widget addressForm() {
+    final addressProvider = Provider.of<UserAddress>(context);
     return Form(
-      key: _formKey,
+      key: _shippingKey,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Column(
           children: [
             TextFormField(
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return "Name can't be empty";
-                } else if (value.length < 4) {
-                  return "Name can't be less than 4 characters";
-                }
-                return null;
-              },
-              decoration: const InputDecoration(hintText: "Name"),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              keyboardType: TextInputType.emailAddress,
-              onChanged: (value) {},
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return " Email can't be empty";
-                } else if (!emailValidatorRegExp.hasMatch(value)) {
-                  return "Enter a valid email";
-                }
-                return null;
-              },
-              decoration: const InputDecoration(hintText: "Email Address"),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
+              controller: _addressOne,
               validator: (value) {
                 if (value!.isEmpty) {
                   return "Address Line 1";
@@ -132,14 +153,19 @@ class _AddressFormState extends State<AddressForm> {
             ),
             const SizedBox(height: 20),
             TextFormField(
-              decoration: const InputDecoration(hintText: "Optional"),
+              onChanged: (value) {
+                _addressTwo = value;
+              },
+              decoration:
+                  const InputDecoration(hintText: "Address 2 (optional)"),
             ),
             const SizedBox(height: 20),
             TextFormField(
+              controller: _zipCode,
               keyboardType: TextInputType.phone,
               validator: (value) {
                 if (value!.isEmpty) {
-                  return "Zip Code";
+                  return "Zip Code can't be empty";
                 } else if (!value.contains(RegExp(r'[0-9]'))) {
                   return "Zip Code cannot contain alphabets";
                 }
@@ -176,6 +202,7 @@ class _AddressFormState extends State<AddressForm> {
               color: Colors.grey.shade600,
             ),
             TextFormField(
+              controller: _phone,
               keyboardType: TextInputType.phone,
               validator: (value) {
                 if (value!.isEmpty) {
@@ -187,7 +214,7 @@ class _AddressFormState extends State<AddressForm> {
               },
               decoration: const InputDecoration(hintText: "Phone number"),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 40),
             Padding(
               padding: const EdgeInsets.only(left: 5),
               child: Row(
@@ -207,47 +234,110 @@ class _AddressFormState extends State<AddressForm> {
             const SizedBox(height: 5),
             CustomButton(
                 buttonText: "Next",
-                press: () =>
-                    Navigator.pushNamed(context, PaymentScreen.routeName)),
-            const SizedBox(height: 20),
+                press: () async {
+                  if (_shippingKey.currentState!.validate()) {
+                    print(_zipCode.text);
+                    print(_countryValue);
+                    print(_phone.text);
+                    await addressProvider.saveAddress(_addressOne.text,
+                        _addressTwo, _zipCode.text, _countryValue, _phone.text);
+                    pushNewScreen(context, screen: OrderDetailScreen());
+                  }
+                }),
+            const SizedBox(height: 60),
           ],
         ),
       ),
     );
   }
+
+  Widget addressTitle(List<AddressModel> address) {
+    final clear = Provider.of<UserAddress>(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Column(
+        children: [
+          const Text("Saved address",
+              style: TextStyle(
+                  color: kPrimaryColor,
+                  fontSize: 20,
+                  fontFamily: kDMSerifDisplay)),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              color: Colors.black87,
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _addressText(address[0].phone),
+                        _addressText(address[0].addressOne),
+                        _addressText(address[0].addressTwo),
+                        _addressText(address[0].zipCode),
+                        _addressText(address[0].country),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, AddressForm.routeName);
+                          },
+                          padding: EdgeInsets.zero,
+                          constraints: BoxConstraints(),
+                          icon: Icon(
+                            Icons.edit,
+                            color: Colors.green,
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        IconButton(
+                            onPressed: () {
+                              clear.deleteAddress(address[0].userId);
+                            },
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                            icon:
+                                Icon(Icons.delete, color: Colors.red.shade400)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 110),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  minimumSize: const Size(220, 45),
+                  primary: kPrimaryColor),
+              onPressed: () {
+                pushNewScreen(context,
+                    screen: const OrderDetailScreen(), withNavBar: false);
+              },
+              child: const Text(
+                "Check Out",
+                style: TextStyle(fontFamily: kDMSerifDisplay),
+              ))
+        ],
+      ),
+    );
+  }
+
+  Text _addressText(String text) {
+    return Text(
+      text,
+      style: TextStyle(color: Colors.white),
+    );
+  }
 }
-// CSCPicker(
-// layout: Layout.vertical,
-// defaultCountry: DefaultCountry.Sri_Lanka,
-// flagState: CountryFlag.ENABLE,
-// countryDropdownLabel: countryValue,
-//
-// //dropdownDecoration: const BoxDecoration(),
-// showCities: false,
-//
-// showStates: false,
-// selectedItemStyle: const TextStyle(
-// color: Colors.black,
-// fontFamily: kSourceSansPro,
-// fontSize: 16,
-// ),
-// dropdownHeadingStyle: const TextStyle(
-// color: kPrimaryColor,
-// fontFamily: kDMSerifDisplay,
-// fontSize: 16),
-// onStateChanged: (value) {
-// setState(() {
-// var stateValue = value;
-// });
-// },
-// onCityChanged: (value) {
-// var cityValue = value;
-// },
-// onCountryChanged: (value) {
-// FocusScope.of(context).unfocus();
-//
-// setState(() {
-// countryValue = value;
-// });
-// },
-// ),

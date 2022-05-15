@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +28,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late String _email;
   late String _password;
+  late String _userName;
+  late String _phoneNumber;
   bool showSpinner = false;
   @override
   Widget build(BuildContext context) {
@@ -64,6 +67,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Column(
                         children: <Widget>[
                           TextFormField(
+                            onChanged: (value) {
+                              setState(() {
+                                _userName = value;
+                              });
+                            },
                             validator: (value) {
                               if (value!.isEmpty) {
                                 return "Username can't be empty";
@@ -130,6 +138,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 20),
                           TextFormField(
+                            onChanged: (value) {
+                              setState(() {
+                                _phoneNumber = value;
+                              });
+                            },
                             keyboardType: TextInputType.phone,
                             validator: (value) {
                               if (value == "") {
@@ -204,8 +217,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       UserCredential result = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: _email, password: _password);
-      print(result.user!.uid);
-      Navigator.pushNamed(context, VerifyEmailScreen.routeName);
+      var firebaseUser = await FirebaseAuth.instance.currentUser!;
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(firebaseUser.uid)
+          .set({
+            'email': _email,
+            'username': _userName,
+            'phone': _phoneNumber,
+            'uid': result.user!.uid,
+          })
+          .then((value) =>
+              Navigator.pushNamed(context, VerifyEmailScreen.routeName))
+          .catchError((e) {
+            print(e);
+          });
       setState(() {
         showSpinner = false;
       });

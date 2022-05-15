@@ -5,8 +5,10 @@ ThemeData theme() {
   return ThemeData(
     fontFamily: kSourceSansPro,
     primarySwatch: Colors.blue,
-    appBarTheme: const AppBarTheme(backgroundColor: Colors.black),
+    appBarTheme: const AppBarTheme(backgroundColor: Colors.black, elevation: 0),
     inputDecorationTheme: inputDecorationTheme(),
+    textSelectionTheme:
+        const TextSelectionThemeData(cursorColor: kPrimaryColor),
   );
 }
 

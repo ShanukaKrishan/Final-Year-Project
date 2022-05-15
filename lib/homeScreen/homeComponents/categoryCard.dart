@@ -1,12 +1,17 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:watch_store/constants.dart';
 
 class CategoryCard extends StatelessWidget {
   final String imageUrl;
   final String categoryName;
+  final String catId;
 
   const CategoryCard(
-      {Key? key, required this.imageUrl, required this.categoryName})
+      {Key? key,
+      required this.imageUrl,
+      required this.categoryName,
+      required this.catId})
       : super(key: key);
 
   @override
@@ -18,8 +23,8 @@ class CategoryCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.asset(
-                imageUrl,
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
                 width: 170,
                 height: 210,
                 fit: BoxFit.fill,

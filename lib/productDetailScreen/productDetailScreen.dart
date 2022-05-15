@@ -1,24 +1,30 @@
+import 'dart:convert';
+
 import 'package:add_to_cart_animation/add_to_cart_animation.dart';
 import 'package:add_to_cart_animation/add_to_cart_icon.dart';
+import 'package:alan_voice/alan_voice.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:external_app_launcher/external_app_launcher.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:watch_store/cartScreen/cartScreen.dart';
 import 'package:watch_store/constants.dart';
 import 'package:provider/provider.dart';
+
 import 'package:watch_store/widgets/cartBadge.dart';
 import 'package:watch_store/providers/cartProvider.dart';
 import 'package:watch_store/providers/productsProvider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   static String routeName = "/detailScreen";
-  final String? title;
-  final String? imageUrl;
 
-  const ProductDetailScreen({Key? key, this.title, this.imageUrl})
-      : super(key: key);
+  const ProductDetailScreen({Key? key}) : super(key: key);
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -27,10 +33,15 @@ class ProductDetailScreen extends StatefulWidget {
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
-    final int productId = ModalRoute.of(context)!.settings.arguments as int;
-    final loadedProduct =
-        Provider.of<ProductsProvider>(context).getProductUsingId(productId);
+    final String productId =
+        ModalRoute.of(context)!.settings.arguments as String;
+    final loadedProduct = Provider.of<ProductsProvider>(context, listen: true)
+        .getProductUsingStringId(productId);
     final cart = Provider.of<CartProvider>(context, listen: false);
+    final productProvider =
+        Provider.of<ProductsProvider>(context, listen: true);
+
+    bool isFavorite = false;
 
     return SafeArea(
       child: Scaffold(
@@ -39,7 +50,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: Column(
             children: [
               Container(
-                color: Color.fromRGBO(235, 235, 235, 1),
+                color: const Color.fromRGBO(235, 235, 235, 1),
                 child: Padding(
                   padding:
                       EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
@@ -69,7 +80,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         child: IconButton(
                           icon: const Icon(Icons.shopping_bag_outlined),
                           onPressed: () {
-                            Navigator.pushNamed(context, CartScreen.routeName);
+                            pushNewScreen(context,
+                                screen: const CartScreen(), withNavBar: false);
+                            // Navigator.pushNamed(
+                            //   context,
+                            //   CartScreen.routeName,
+                            // );
                           },
                         ),
                       ),
@@ -78,7 +94,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ),
               AspectRatio(
-                  aspectRatio: 1.5, child: Image.asset(loadedProduct.imageUrl)),
+                  aspectRatio: 1.5,
+                  child: CachedNetworkImage(imageUrl: loadedProduct.imageUrl)),
               Container(
                 padding: EdgeInsets.only(top: 20.w),
                 width: double.infinity,
@@ -131,8 +148,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 iconSize: 20,
                                 onPressed: () {
                                   setState(() {
-                                    loadedProduct.isFavorite =
-                                        !loadedProduct.isFavorite;
+                                    loadedProduct
+                                        .togleFavoriteStatus(productId);
                                   });
                                 },
                                 icon: loadedProduct.isFavorite
@@ -150,9 +167,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               fixedSize: const Size(200, 50),
                             ),
                             onPressed: () {
+                              // addProductCart(loadedProduct.id,
+                              //     loadedProduct.price.toDouble());
+
+                              sendData();
                               cart.addItem(
                                   loadedProduct.id.toString(),
-                                  loadedProduct.price,
+                                  loadedProduct.price.toDouble(),
                                   loadedProduct.title,
                                   loadedProduct.imageUrl,
                                   context);
@@ -170,7 +191,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               child: IconButton(
                                 padding: EdgeInsets.zero,
                                 iconSize: 20,
-                                onPressed: () {},
+                                onPressed: () async {
+                                  await LaunchApp.openApp(
+                                    androidPackageName:
+                                        'com.DefaultCompany.test1',
+                                  );
+                                },
                                 icon: const Icon(FontAwesomeIcons.vrCardboard),
                               ),
                             ),
@@ -188,5 +214,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
       ),
     );
+  }
+
+  void sendData() {
+    final cart = Provider.of<CartProvider>(context, listen: false);
+    var total = cart.totalAmount;
+    var params = jsonEncode({"total:": total});
+    AlanVoice.callProjectApi("script::getTotal", params);
+  }
+
+  Future<void> addProductCart(String loadedProductID, double price) async {
+    final userID = await FirebaseAuth.instance.currentUser!.uid;
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userID)
+        .collection('userCart')
+        .add({
+      'productId': loadedProductID,
+      'price': price,
+    });
   }
 }

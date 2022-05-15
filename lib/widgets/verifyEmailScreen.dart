@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -23,7 +24,7 @@ class VerifyEmailScreen extends StatefulWidget {
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   bool isEmailVerified = false;
   Timer? timer;
-  static const maxSeconds = 30;
+  static const maxSeconds = 10;
   int seconds = maxSeconds;
   Timer? countdown;
   bool canResendEmail = false;
@@ -31,14 +32,13 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   void dispose() {
     timer?.cancel();
     countdown?.cancel();
-    // TODO: implement dispose
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-    // TODO: implement initState
+
     startTimer();
     isEmailVerified = FirebaseAuth.instance.currentUser!.emailVerified;
     if (!isEmailVerified) {
@@ -59,21 +59,16 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   }
 
   Future sendVerificationEmail() async {
+    setState(() {
+      canResendEmail = false;
+    });
     try {
       print("sent");
+
       final user = FirebaseAuth.instance.currentUser!;
       await user.sendEmailVerification();
-      setState(() {
-        canResendEmail = false;
-      });
-      await Future.delayed(const Duration(seconds: 30));
-      setState(
-        () {
-          canResendEmail = true;
-        },
-      );
     } catch (e) {
-      print("error");
+      print(e);
     }
   }
 
@@ -82,11 +77,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       const Duration(seconds: 1),
       (_) {
         if (seconds > 0) {
-          setState(
-            () {
-              seconds--;
-            },
-          );
+          setState(() {
+            seconds--;
+          });
         } else {
           stopTimer();
         }
@@ -95,7 +88,17 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   }
 
   void stopTimer() {
-    timer?.cancel();
+    countdown?.cancel();
+    setState(() {
+      resetTimer();
+      canResendEmail = true;
+    });
+  }
+
+  void resetTimer() {
+    setState(() {
+      seconds = 10;
+    });
   }
 
   @override
@@ -103,6 +106,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     return isEmailVerified
         ? const StartPoint()
         : Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.arrow_back),
+              ),
+            ),
             body: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
